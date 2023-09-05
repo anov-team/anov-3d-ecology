@@ -9,6 +9,8 @@ anov3d 将社区中常见的模型加载器进行了统一封装
 
 ## GLTF
 
+### 普通加载
+
 ```ts
 import { ModelLoader, Scene, Vector3, Group } from '@anov/3d';
 
@@ -27,6 +29,26 @@ scene.startFrameAnimate()
 ```
 
 <Model type = 'gltf'/>
+
+### worker 加载
+
+```ts
+import { ModelLoader, Scene, Vector3, Group } from '@anov/3d';
+
+const scene = new Scene({
+  orbitControls: true,
+  ambientLight: true,
+})
+const modelLoader = new ModelLoader()
+
+modelLoader.loadGLTFWorker('./car.glb', (gltf) => {
+  scene.add((gltf as any).scene)
+})
+
+scene.render(document.querySelector('#app')!)
+scene.startFrameAnimate()
+```
+
 
 ## FBX
 

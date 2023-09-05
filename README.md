@@ -20,9 +20,9 @@ playground
 
 > notes: 暂时需科学上网
 
-[示例网站](https://anov-3d-ecology.vercel.app/#base_scene)
+示例网站: https://anov-3d-ecology.vercel.app/#base_scene
 
-使用文档：暂时需要拉去代码本地查看
+使用文档：https://3d-doc.vercel.app/
 
 ### development
 

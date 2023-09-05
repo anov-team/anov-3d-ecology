@@ -1,8 +1,8 @@
 import type { Group } from 'three'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
+import loaderGlbWorker from '../woker/loadGlb'
+import { loadFbx, loadGlb } from './load/modelLoad'
 
 class ModelLoader {
   /**
@@ -17,29 +17,31 @@ class ModelLoader {
     onLoad?: (result: GLTF) => GLTF,
     onProgress?: (event: ProgressEvent) => void,
     onError?: (event: ErrorEvent) => void) {
-    const loader = new GLTFLoader()
-    const dracoLoader = new DRACOLoader()
+    return loadGlb(url, onLoad, onProgress, onError)
+  }
 
-    // todo: 调优
-    dracoLoader.setDecoderPath('./draco/')
-    dracoLoader.setDecoderConfig({ type: 'js' })
-    dracoLoader.preload()
+  /**
+   * load gltf model in worker
+   * TODO: 测试
+   * @param url
+   */
+  public loadGLTFWorker(url: string, cb: (result: GLTF) => void) {
+    const loadGlbWorker = new Worker (
+      URL.createObjectURL (new Blob ([`(${loaderGlbWorker.toString()})('${url}')`])),
+    )
 
-    loader.setDRACOLoader(dracoLoader)
+    loadGlbWorker.onmessage = (event) => {
+      cb(event.data)
+      loadGlbWorker.terminate()
+    }
 
-    return new Promise((resolve, reject) => {
-      loader.load(url,
-        (gltf) => {
-          onLoad ? resolve(onLoad(gltf)) : resolve(gltf)
-        },
-        (xhr) => {
-          onProgress && onProgress(xhr)
-        },
-        (err) => {
-          onError && onError(err)
-          reject(err)
-        })
-    })
+    loadGlbWorker.onerror = (err) => {
+      console.error(err)
+    }
+
+    loadGlbWorker.onmessageerror = (err) => {
+      console.error(err)
+    }
   }
 
   /**
@@ -53,22 +55,15 @@ class ModelLoader {
     onLoad?: (result: Group) => Group,
     onProgress?: (event: ProgressEvent) => void,
     onError?: (event: ErrorEvent) => void) {
-    const fbxLoader = new FBXLoader()
-
-    return new Promise((resolve, reject) => {
-      fbxLoader.load(url,
-        (fbx) => {
-          onLoad ? resolve(onLoad(fbx)) : resolve(fbx)
-        },
-        (xhr) => {
-          onProgress && onProgress(xhr)
-        },
-        (err) => {
-          onError && onError(err)
-          reject(err)
-        })
-    })
+    return loadFbx(url, onLoad, onProgress, onError)
   }
+
+  /**
+   * load fbx model in worker
+   * @param url
+   * @param cb
+   */
+  public loadFbxWorker(url: string, cb: (result: Group) => void) {}
 
   /**
    * parse fbx buffer
